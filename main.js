@@ -23,7 +23,7 @@ document.querySelector('#app').innerHTML = `
   <div>
     <h2>GUESSES REMAINING: 3</h2>
     <p class="read-the-docs">You can submit 3 guesses every 24 hours</p>
-    <!-- <img src="${hint}" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
+    <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
     <div class="guess-row">
         <div class="guess-box"> </div>
         <div class="guess-box"> </div>
