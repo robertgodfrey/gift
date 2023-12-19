@@ -1,10 +1,9 @@
-import './style.css'
-//import hint from '/hint.jpg'
+import './style.css';
 
+const correctCode = 'NULPWE';
 const topKeys = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
 const middleKeys = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
 const bottomKeys = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
-
 const guessChars = [];
 
 function refreshGuesses() {
@@ -21,9 +20,10 @@ function pushKey(key) {
 
 document.querySelector('#app').innerHTML = `
   <div>
-    <h2>GUESSES REMAINING: 3</h2>
-    <p class="read-the-docs">You can submit 3 guesses every 24 hours</p>
+    <h2>GUESS THE CODE</h2>
+    <p class="read-the-docs">You can submit a guess every two minutes.<br/>A new hint will appear in 5 guesses.</p>
     <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
+    <button class="hint-btn">HINT #1</button>
     <div class="guess-row">
         <div class="guess-box"> </div>
         <div class="guess-box"> </div>
