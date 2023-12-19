@@ -7,16 +7,9 @@ dotenv.config();
 
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
-let checkData;
-
-try {
-    checkData = JSON.parse(fs.readFileSync('./checkData.json', 'utf8'));
-} catch (err) {
-    console.error(err);
-}
 
 // get last check from checkData file
-let lastCheckTime = Date.parse(checkData.lastCheck);
+let lastCheckTime = Date.now();
 
 const app = express(); // init app
 
