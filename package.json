@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "node api/index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"vite\"",
     "server": "nodemon api/index.js",
-    "client": "npm run dev --prefix frontend"
+    "client": "npm run dev --prefix frontend",
+    "build": "vite build"
   },
   "main": "api/index.js",
   "dependencies": {
@@ -15,7 +16,6 @@
     "dotenv": "^16.3.1",
     "esbuild": "^0.19.9",
     "express": "^4.18.2",
-    "fsevents": "^2.3.3",
     "mongoose": "^8.0.3",
     "nanoid": "^3.3.7",
     "picocolors": "^1.0.0",
@@ -30,6 +30,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "vite": "^5.0.10"
   }
 }
