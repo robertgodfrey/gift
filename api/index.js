@@ -33,6 +33,8 @@ app.post('/check-code', async (req, res) => {
         },
         body: JSON.stringify({ content: `Someone tried to validate code "${checkCode}" at ${new Date().toLocaleString()}.` })
     });
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
     if (Date.now() - lastCheckTime < 120000) {
         return res.json({ success: false, message: 'You can only check the code every two minutes.' });
     }
