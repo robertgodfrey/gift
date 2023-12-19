@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const port = process.env.PORT || 3000;
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
 let checkData;
@@ -46,4 +45,4 @@ app.post('/check-code', async (req, res) => {
 });
 
 // start server
-app.listen(port, () => console.log(`Server started on port ${port}.`));
+export default app;
