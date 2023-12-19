@@ -17,7 +17,7 @@ const app = express(); // init app
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.post('/check-code', async (req, res) => {
+app.post('/api/check-code', async (req, res) => {
     const { checkCode } = req.body;
     await fetch(webhookUrl, {
         method: 'POST',
