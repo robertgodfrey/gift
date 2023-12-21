@@ -28,7 +28,7 @@ document.querySelector('#app').innerHTML = `
     <h2>GUESS THE CODE</h2>
     <p class="read-the-docs">You can submit a guess every two minutes.<br/>A new hint will appear in 5 guesses.</p>
     <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
-    <button class="hint-btn" onclick="playHint">HINT #1</button>
+    <button class="hint-btn" onclick="${playHint}">HINT #1</button>
     <div class="guess-row">
         <div class="guess-box"> </div>
         <div class="guess-box"> </div>
