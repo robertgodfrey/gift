@@ -55,8 +55,16 @@ keys.forEach(key => {
     });
 });
 
-document.querySelector('#enterKey').addEventListener('click', () => {
+document.querySelector('#enterKey').addEventListener('click', async () => {
     console.log('ENTER');
+    const res = await fetch('https://gift-ecru.vercel.app/api/check-code', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ checkCode: guessChars.join('') })
+    });
+    console.log(res);
 });
 
 document.querySelector('#backKey').addEventListener('click', () => {
