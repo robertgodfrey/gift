@@ -6,7 +6,8 @@ const bottomKeys = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
 const guessChars = [];
 
 const audioHint = new Audio('/hint1.mp3');
-let countdownInterval;
+let musicCountdownInterval;
+let timeCountdownInterval;
 
 function refreshGuesses() {
     document.querySelectorAll('.guess-box').forEach((box, index) => {
@@ -30,13 +31,32 @@ function showModal() {
     document.querySelector('#modal').classList.add('overlay-bg');
 }
 
+function loadHints(hints) {
+    Object.keys(hints).forEach((key) => {
+        const button = document.createElement('button');
+        button.classList.add('hint-btn');
+        button.id = `hint${key}`;
+        button.innerHTML = `HINT #${key}`;
+        document.querySelector('#hintContainer').appendChild(button);
+        document.querySelector(`#hint${key}`).addEventListener('click', () => {
+            showModal();
+            document.querySelector('#modalTitle').innerHTML = `HINT #${key}`;
+            document.querySelector('#modalText').innerHTML = `
+                        <div class="imgHint">
+                            <img src="${hints[key]}" alt="Hint" style="width: 80%; border-radius: 15px;" />
+                        </div>
+                    `;
+        });
+    });
+}
+
 document.querySelector('#app').innerHTML = `
   <div>
     <div style="position: fixed; bottom: 0; left: 0; right: 0; top: 20%; padding-bottom: 100px;">
         <h2>GUESS THE CODE</h2>
         <p class="read-the-docs">
-            You can submit a guess every two minutes.<br/>
-            A new hint will appear after <span id="guessCount">5</span> guesses.
+            You can submit one guess every minute.<br/>
+            A new hint will appear after <span id="guessCount">3</span> guesses.
         </p>
         <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
         <div id="hintContainer">
@@ -91,15 +111,16 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
         if (json.secondsRemaining && json.secondsRemaining > 0) {
             showModal();
             modalTitle.innerHTML = 'HOLD YOUR HORSES';
-            modalText.innerHTML = `You can only check a code every two minutes.<br/><br/>You can check again in ${json.secondsRemaining} seconds.`;
+            modalText.innerHTML = `You can only check one code every minute.<br/><br/>You can check again in ${json.secondsRemaining} seconds.`;
         } else {
             // modal - show guess result
             showModal();
             if (json.success) {
                 modalTitle.innerHTML = 'YOU WIN!';
-                modalText.innerHTML = 'Congratulations! You guessed the code!';
+                modalText.innerHTML = 'Congratulations! You guessed the code!<br/><br/>CODE: ${json.code}';
             } else {
-                modalTitle.innerHTML = 'WRONG';
+                let secondsRemaining = 60;
+                modalTitle.innerHTML = 'INCORRECT';
                 if (json.message) {
                     modalText.innerHTML = json.message;
                 } else {
@@ -107,23 +128,46 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                         <div>
                             Correct letters: <b>${json.correctLetters}</b>
                             <br/>
-                            Correct letters and correct position: <b>${json.correctPositions}</b>
+                            Correct letter <i>and</i> position: <b>${json.correctPositions}</b>
                             <br/><br/>
                             You can check again in 2 minutes.
                         </div>
                     `;
                     document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;
                 }
+                timeCountdownInterval = setInterval(() => {
+                    const enterKey = document.querySelector('#enterKey');
+                    // disable enter key
+                    enterKey.disabled = true;
+                    enterKey.innerHTML = `${secondsRemaining}`;
+                    secondsRemaining--;
+                    if (secondsRemaining < 0) {
+                        clearInterval(timeCountdownInterval);
+                        enterKey.innerHTML = 'ENTER';
+                        enterKey.disabled = false;
+                    }
+                }, 1000);
+                if (json.hints) loadHints(json.hints);
             }
             guessChars.length = 0;
             refreshGuesses();
         }
     } catch (e) {
-        // modal - error
         showModal();
-        modalTitle.innerHTML = 'ERROR';
-        modalText.innerHTML = 'There was an error checking your code. Please try again.';
-        console.error(e);
+        let secondsRemaining = 60;
+        modalTitle.innerHTML = 'INCORRECT';
+        timeCountdownInterval = setInterval(() => {
+            const enterKey = document.querySelector('#enterKey');
+            // disable enter key
+            enterKey.disabled = true;
+            enterKey.innerHTML = `${secondsRemaining}`;
+            secondsRemaining--;
+            if (secondsRemaining < 0) {
+                clearInterval(timeCountdownInterval);
+                enterKey.innerHTML = 'ENTER';
+                enterKey.disabled = false;
+            }
+        }, 1000);
     }
     loading.classList.remove('overlay-bg');
     loading.classList.add('overlay-bg-hidden');
@@ -157,15 +201,15 @@ document.querySelector('#hintOne').addEventListener('click', () => {
             audioHint.pause();
             audioHint.currentTime = 0;
             document.querySelector('#hintOne').innerHTML = 'HINT #1';
-            clearInterval(countdownInterval);
+            clearInterval(musicCountdownInterval);
         } else {
             audioHint.play();
-            countdownInterval = setInterval(() => {
+            musicCountdownInterval = setInterval(() => {
                 setTimeHint(secondsRemaining);
                 secondsRemaining--;
                 // clear interval if seconds below 1
                 if (secondsRemaining < 0) {
-                    clearInterval(countdownInterval);
+                    clearInterval(musicCountdownInterval);
                     document.querySelector('#hintOne').innerHTML = 'HINT #1';
                 }
             }, 1000);
@@ -182,22 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetch('/api/status');
         const json = await res.json();
         if (json.hints) {
-            Object.keys(json.hints).forEach((key) => {
-                const button = document.createElement('button');
-                button.classList.add('hint-btn');
-                button.id = `hint${key}`;
-                button.innerHTML = `HINT #${key}`;
-                document.querySelector('#hintContainer').appendChild(button);
-                document.querySelector(`#hint${key}`).addEventListener('click', () => {
-                    showModal();
-                    document.querySelector('#modalTitle').innerHTML = `HINT #${key}`;
-                    document.querySelector('#modalText').innerHTML = `
-                        <div class="imgHint">
-                            <img src="${json.hints[key]}" alt="Hint" style="width: 80%; border-radius: 15px;" />
-                        </div>
-                    `;
-                })
-            });
+            loadHints(json.hints);
         }
         if (json.guessesUntilHint) {
             document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;

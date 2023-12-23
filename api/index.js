@@ -6,7 +6,7 @@ dotenv.config();
 
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
-const secondsBetweenGuesses = 120;
+const secondsBetweenGuesses = 60;
 const hints = {
     2: 'https://i.imgur.com/Sa65OCo.png',
     3: 'https://i.imgur.com/zbWUy7U.png',
@@ -16,27 +16,30 @@ const hints = {
 const currentHints = {};
 
 let lastCheckTime = Date.parse('01 Dec 2023 00:00:00 GMT');
-let guessesUntilHint = 5;
+let guessesUntilHint = 3;
 let hintIndex = 1;
 
 const app = express(); // init app
 
-// body parser middleware
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-app.post('/api/check-code', async (req, res) => {
-    const { checkCode } = req.body;
+async function postWebhook(message) {
     await fetch(webhookUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            content: `Someone tried to validate code "${checkCode}" at ${new Date().toLocaleString()}.`,
+            content: `${message} at ${new Date().toLocaleString()} UTC.`,
         })
     });
+}
+// body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.post('/api/check-code', (req, res) => {
+    const { checkCode } = req.body;
     if (!checkCode) {
+        postWebhook('Someone tried to check a code, but didn\'t provide a code -');
         return res.json({ success: false, message: 'No code provided.' });
     }
     res.setHeader('Content-Type', 'application/json');
@@ -51,6 +54,7 @@ app.post('/api/check-code', async (req, res) => {
     guessesUntilHint--;
     lastCheckTime = Date.now();
     if (checkCode === 'BZYUQS') {
+        postWebhook('Someone tried to check the dummy code! #hackerman');
         return res.json({ success: false, message: 'Nice try, hackerman!' });
     }
     if (checkCode !== code) {
@@ -67,8 +71,9 @@ app.post('/api/check-code', async (req, res) => {
         if (guessesUntilHint <= 0) {
             hintIndex++;
             currentHints[hintIndex] = hints[hintIndex];
-            guessesUntilHint = 5;
+            guessesUntilHint = 3;
         }
+        postWebhook(`Someone tried to check code ${checkCode} (${correctLetters} correct letters, ${correctPositions} correct positions)`);
         res.json({
             success: false,
             hints: currentHints,
@@ -77,7 +82,7 @@ app.post('/api/check-code', async (req, res) => {
             guessesUntilHint: guessesUntilHint,
         });
     } else {
-        res.json({ success: true });
+        res.json({ success: true, code: code });
     }
 });
 
