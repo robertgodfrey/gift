@@ -32,7 +32,9 @@ app.post('/api/check-code', async (req, res) => {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ content: `Someone tried to validate code "${checkCode}" at ${new Date().toLocaleString()}.` })
+        body: JSON.stringify({
+            content: `Someone tried to validate code "${checkCode}" at ${new Date().toLocaleString()}.`,
+        })
     });
     if (!checkCode) {
         return res.json({ success: false, message: 'No code provided.' });
@@ -52,12 +54,11 @@ app.post('/api/check-code', async (req, res) => {
         return res.json({ success: false, message: 'Nice try, hackerman!' });
     }
     if (checkCode !== code) {
-        const correctLetters = new Set();
-        const resBody = { success: false};
+        let correctLetters = 0;
         let correctPositions = 0;
-        for (let i = 0; i < checkCode.length; i++) {
-            if (code.includes(checkCode[i])) {
-                correctLetters.add(checkCode[i]);
+        for (let i = 0; i < code.length; i++) {
+            if (checkCode.includes(code[i])) {
+                correctLetters++;
             }
             if (checkCode[i] === code[i]) {
                 correctPositions++;
@@ -68,11 +69,13 @@ app.post('/api/check-code', async (req, res) => {
             currentHints[hintIndex] = hints[hintIndex];
             guessesUntilHint = 5;
         }
-        resBody.hints = currentHints;
-        resBody.correctLetters = correctLetters.size;
-        resBody.correctPositions = correctPositions;
-        resBody.guessesUntilHint = guessesUntilHint;
-        res.json(resBody);
+        res.json({
+            success: false,
+            hints: currentHints,
+            correctLetters: correctLetters.size,
+            correctPositions: correctPositions,
+            guessesUntilHint: guessesUntilHint,
+        });
     } else {
         res.json({ success: true });
     }
