@@ -9,6 +9,34 @@
   <body>
     <div id="hint4" hidden>https://i.imgur.com/DuOQtfG.mp4</div>
     <div id="app"></div>
+    <div id="modal" class="overlay-bg">
+      <div class="modal">
+        <h3 id="modalTitle">title</h3>
+        <p id="modalText">text</p>
+      </div>
+    </div>
+    <div id="loading" class="overlay-bg-hidden">
+      <div style="display: flex; justify-content: center;">
+        <div class="loader"></div>
+      </div>
+    </div>
     <script type="module" src="/main.js"></script>
+    <script>
+      const correctCode = 'BZYUQS';
+      const guess = document.getElementById('guessInput');
+      function checkGuess() {
+        if (guess.value === correctCode) {
+          return { correct: true, msg: 'Way to go!' };
+        } else {
+          let numberCorrect = 0;
+          for (let i = 0; i < guess.value.length; i++) {
+              if (correctCode.includes(guess.value[i])) {
+                numberCorrect++;
+              }
+          }
+          return { correct: false, msg: `${numberCorrect} letters correct` };
+        }
+      }
+    </script>
   </body>
 </html>
