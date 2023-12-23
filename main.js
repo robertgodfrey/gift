@@ -112,6 +112,7 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                             You can check again in 2 minutes.
                         </div>
                     `;
+                    document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;
                 }
             }
             guessChars.length = 0;
@@ -182,9 +183,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const json = await res.json();
         if (json.hints) {
             Object.keys(json.hints).forEach((key) => {
-                document.querySelector(`#hintContainer`).append(`
-                    <button class="hint-btn" id="hint${key}">HINT #${key}</button>
-                `);
+                const button = document.createElement('button');
+                button.classList.add('hint-btn');
+                button.id = `hint${key}`;
+                button.innerHTML = `HINT #${key}`;
+                document.querySelector('#hintContainer').appendChild(button);
                 document.querySelector(`#hint${key}`).addEventListener('click', () => {
                     showModal();
                     document.querySelector('#modalTitle').innerHTML = `HINT #${key}`;

@@ -145,7 +145,8 @@ button:hover {
   position: fixed;
   background: #242424;
   border-radius: 15px;
-  margin: 8px;
+  margin-left: 14px;
+  margin-right: 14px;
   width: 100%;
   max-width: 500px;
   text-align: center;
