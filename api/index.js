@@ -72,7 +72,7 @@ app.post('/api/check-code', async (req, res) => {
         res.json({
             success: false,
             hints: currentHints,
-            correctLetters: correctLetters.size,
+            correctLetters: correctLetters,
             correctPositions: correctPositions,
             guessesUntilHint: guessesUntilHint,
         });
