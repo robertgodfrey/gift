@@ -1,6 +1,5 @@
 import './style.css';
 
-const correctCode = 'NXLPWE';
 const topKeys = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
 const middleKeys = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
 const bottomKeys = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
@@ -69,9 +68,12 @@ document.querySelectorAll('.keyboard-key').forEach(key => {
 
 document.querySelector('#enterKey').addEventListener('click', async () => {
     const loading = document.querySelector('#loading');
-    const modal = document.querySelector('#modal');
+    const modalTitle = document.querySelector('#modalTitle');
+    const modalText = document.querySelector('#modalText');
+
     loading.classList.remove('overlay-bg-hidden');
     loading.classList.add('overlay-bg');
+
     try {
         const res = await fetch('/api/check-code', {
             method: 'POST',
@@ -80,14 +82,27 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
         });
         const json = await res.json();
         if (json.secondsRemaining && json.secondsRemaining > 0) {
-            // modal - ya gotta wait
+            showModal();
+            modalTitle.innerHTML = 'Hold your horses!';
+            modalText.innerHTML = `You can only check a code every two minutes.<br/>You can check again in ${json.secondsRemaining} seconds.`;
         } else {
             // modal - show guess result
+            showModal();
+            if (json.success) {
+                modalTitle.innerHTML = 'YOU WIN!';
+                modalText.innerHTML = 'Congratulations! You guessed the code!';
+            } else {
+                modalTitle.innerHTML = 'WRONG!';
+                modalText.innerHTML = `You guessed ${json.correctLetters} correct letters and ${json.correctPositions} in the correct position.<br/>You can check again in 2 minutes.`;
+            }
             guessChars.length = 0;
             refreshGuesses();
         }
     } catch (e) {
         // modal - error
+        showModal();
+        modalTitle.innerHTML = 'ERROR';
+        modalText.innerHTML = 'There was an error checking your code. Please try again.';
         console.error(e);
     }
     loading.classList.remove('overlay-bg');

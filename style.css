@@ -150,6 +150,10 @@ button:hover {
   text-align: center;
 }
 
+#modalText {
+  padding-bottom: 1em;
+}
+
 .loader {
   border: 6px solid #dedede;
   border-top: 6px solid #79b1e8;
