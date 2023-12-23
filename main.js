@@ -33,9 +33,14 @@ function showModal() {
 document.querySelector('#app').innerHTML = `
   <div>
     <h2>GUESS THE CODE</h2>
-    <p class="read-the-docs">You can submit a guess every two minutes.<br/>A new hint will appear in 5 guesses.</p>
+    <p class="read-the-docs">
+        You can submit a guess every two minutes.<br/>
+        A new hint will appear after <span id="guessCount">5</span> guesses.
+    </p>
     <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
-    <button id="hintOne" class="hint-btn">HINT #1</button>
+    <div id="hintContainer">
+        <button id="hintOne" class="hint-btn">HINT #1</button>
+    </div>
     <div class="guess-row">
         <div class="guess-box"> </div>
         <div class="guess-box"> </div>
@@ -83,8 +88,8 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
         const json = await res.json();
         if (json.secondsRemaining && json.secondsRemaining > 0) {
             showModal();
-            modalTitle.innerHTML = 'Hold your horses!';
-            modalText.innerHTML = `You can only check a code every two minutes.<br/>You can check again in ${json.secondsRemaining} seconds.`;
+            modalTitle.innerHTML = 'HOLD YOUR HORSES';
+            modalText.innerHTML = `You can only check a code every two minutes.<br/><br/>You can check again in ${json.secondsRemaining} seconds.`;
         } else {
             // modal - show guess result
             showModal();
@@ -92,8 +97,20 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                 modalTitle.innerHTML = 'YOU WIN!';
                 modalText.innerHTML = 'Congratulations! You guessed the code!';
             } else {
-                modalTitle.innerHTML = 'WRONG!';
-                modalText.innerHTML = `You guessed ${json.correctLetters} correct letters and ${json.correctPositions} in the correct position.<br/>You can check again in 2 minutes.`;
+                modalTitle.innerHTML = 'WRONG';
+                if (json.message) {
+                    modalText.innerHTML = json.message;
+                } else {
+                    modalText.innerHTML = `
+                        <div>
+                            Correct letters: <b>${json.correctLetters}</b>
+                            <br/>
+                            Correct letters and correct position: <b>${json.correctPositions}</b>
+                            <br/><br/>
+                            You can check again in 2 minutes.
+                        </div>
+                    `;
+                }
             }
             guessChars.length = 0;
             refreshGuesses();
@@ -150,6 +167,35 @@ document.querySelector('#hintOne').addEventListener('click', () => {
                 }
             }, 1000);
             document.querySelector('#hintOne').innerHTML = 'STOP 0:28';
+        }
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+// on dom content loaded, get status
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/status');
+        const json = await res.json();
+        if (json.hints) {
+            Object.keys(json.hints).forEach((key) => {
+                document.querySelector(`#hintContainer`).append(`
+                    <button class="hint-btn" id="hint${key}">HINT #${key}</button>
+                `);
+                document.querySelector(`#hint${key}`).addEventListener('click', () => {
+                    showModal();
+                    document.querySelector('#modalTitle').innerHTML = `HINT #${key}`;
+                    document.querySelector('#modalText').innerHTML = `
+                        <div class="imgHint">
+                            <img src="${json.hints[key]}" alt="Hint" style="width: 80%; border-radius: 15px;" />
+                        </div>
+                    `;
+                })
+            });
+        }
+        if (json.guessesUntilHint) {
+            document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;
         }
     } catch (e) {
         console.error(e);
