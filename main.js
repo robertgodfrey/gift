@@ -32,24 +32,26 @@ function showModal() {
 
 document.querySelector('#app').innerHTML = `
   <div>
-    <h2>GUESS THE CODE</h2>
-    <p class="read-the-docs">
-        You can submit a guess every two minutes.<br/>
-        A new hint will appear after <span id="guessCount">5</span> guesses.
-    </p>
-    <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
-    <div id="hintContainer">
-        <button id="hintOne" class="hint-btn">HINT #1</button>
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; top: 20%; padding-bottom: 100px;">
+        <h2>GUESS THE CODE</h2>
+        <p class="read-the-docs">
+            You can submit a guess every two minutes.<br/>
+            A new hint will appear after <span id="guessCount">5</span> guesses.
+        </p>
+        <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
+        <div id="hintContainer">
+            <button id="hintOne" class="hint-btn">HINT #1</button>
+        </div>
+        <div class="guess-row">
+            <div class="guess-box"> </div>
+            <div class="guess-box"> </div>
+            <div class="guess-box"> </div>
+            <div class="guess-box"> </div>
+            <div class="guess-box"> </div>
+            <div class="guess-box"> </div>
+        </div>
     </div>
-    <div class="guess-row">
-        <div class="guess-box"> </div>
-        <div class="guess-box"> </div>
-        <div class="guess-box"> </div>
-        <div class="guess-box"> </div>
-        <div class="guess-box"> </div>
-        <div class="guess-box"> </div>
-    </div>
-    <div id="keyboard">
+    <div id="keyboard" style="position: fixed; bottom: 0; left: 0; right: 0;">
         <div class="keyboard-row">
             ${topKeys.map(key => `<button class="keyboard-key">${key}</button>`).join('')}
         </div>
