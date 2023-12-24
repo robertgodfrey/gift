@@ -117,6 +117,11 @@ app.post('/api/check-code', async (req, res) => {
 
 app.get('/api/status', (req, res) => {
     const secondsRemaining = Math.round((secondsBetweenGuesses * 1000 - (Date.now() - lastCheckTime)) / 1000);
+    if (hintIndex > 1) {
+        for (let i = 1; i <= hintIndex; i++) {
+            currentHints[i] = hints[i];
+        }
+    }
     return res.json({
         secondsRemaining: secondsRemaining < 0 ? 0 : secondsRemaining,
         hints: currentHints,
