@@ -163,7 +163,7 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                     if (Object.keys(json.hints).length > 3) {
                         document.querySelector('#guessMsg').innerHTML = 'You have unlocked all hints. If you need more help, please notify Rob.';
                     } else {
-                        document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+                        document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}.`;
                     }
                 }
                 timeCountdownInterval = setInterval(() => {
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (Object.keys(json.hints).length > 3) {
                 document.querySelector('#guessMsg').innerHTML = 'You have unlocked all hints. If you need more help, please notify Rob.';
             } else {
-                document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+                document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}.`;
             }
         }
         if (json.secondsRemaining) {

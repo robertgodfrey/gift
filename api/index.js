@@ -7,6 +7,9 @@ dotenv.config();
 
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
+let guessesUntilHint = process.env.GUESSES_UNTIL_HINT || 3;
+let hintIndex = process.env.HINT_INDEX || 1;
+
 const secondsBetweenGuesses = 5;
 const hints = {
     2: 'https://i.imgur.com/Sa65OCo.png',
@@ -17,8 +20,6 @@ const hints = {
 const currentHints = {};
 
 let lastCheckTime = Date.parse('01 Dec 2023 00:00:00 GMT');
-let guessesUntilHint = 3;
-let hintIndex = 1;
 
 const app = express(); // init app
 //app.use(cors());
@@ -54,6 +55,7 @@ app.post('/api/check-code', (req, res) => {
         });
     }
     guessesUntilHint--;
+    process.env['GUESSES_UNTIL_HINT'] = guessesUntilHint;
     lastCheckTime = Date.now();
     if (checkCode === 'BZYUQS') {
         postWebhook('Someone tried to check the dummy code! #hackerman');
@@ -74,6 +76,8 @@ app.post('/api/check-code', (req, res) => {
             hintIndex++;
             currentHints[hintIndex] = hints[hintIndex];
             guessesUntilHint = 3;
+            process.env['HINT_INDEX'] = hintIndex;
+            process.env['GUESSES_UNTIL_HINT'] = guessesUntilHint;
         }
         postWebhook(`Someone tried to check code ${checkCode} (${correctLetters} correct letters, ${correctPositions} correct positions)`);
         res.json({
