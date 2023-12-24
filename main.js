@@ -31,8 +31,14 @@ function showModal() {
     document.querySelector('#modal').classList.add('overlay-bg');
 }
 
+function hideModal() {
+    document.querySelector('#modal').classList.remove('overlay-bg');
+    document.querySelector('#modal').classList.add('overlay-bg-hidden');
+}
+
 function loadHints(hints) {
     Object.keys(hints).forEach((key) => {
+        if (document.querySelector(`#hint${key}`)) return;
         const button = document.createElement('button');
         button.classList.add('hint-btn');
         button.id = `hint${key}`;
@@ -55,13 +61,11 @@ document.querySelector('#app').innerHTML = `
     <div style="position: fixed; bottom: 0; left: 0; right: 0; top: 20%; padding-bottom: 100px;">
         <h2>GUESS THE CODE</h2>
         <p class="read-the-docs">
-            You can submit one guess every minute.<br/>
-            A new hint will appear after <span id="guessCount">3</span> guesses.
+            You can submit one guess every three minutes.<br/>
+            A new hint will appear after <span id="guessCount">3 guesses</span>.
         </p>
         <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
-        <div id="hintContainer">
-            <button id="hintOne" class="hint-btn">HINT #1</button>
-        </div>
+        <div id="hintContainer"><button id="hintOne" class="hint-btn">HINT #1</button></div>
         <div class="guess-row">
             <div class="guess-box"> </div>
             <div class="guess-box"> </div>
@@ -79,7 +83,7 @@ document.querySelector('#app').innerHTML = `
             ${middleKeys.map(key => `<button class="keyboard-key">${key}</button>`).join('')}
         </div>
         <div class="keyboard-row">
-            <button id="enterKey">ENTER</button>
+            <button id="enterKey" disabled>ENTER</button>
             ${bottomKeys.map(key => `<button class="keyboard-key">${key}</button>`).join('')}
             <button id="backKey">BACK</button>
         </div>
@@ -108,32 +112,56 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
             body: JSON.stringify({ checkCode: guessChars.join('') })
         });
         const json = await res.json();
+        console.log(json);
         if (json.secondsRemaining && json.secondsRemaining > 0) {
             showModal();
             modalTitle.innerHTML = 'HOLD YOUR HORSES';
-            modalText.innerHTML = `You can only check one code every minute.<br/><br/>You can check again in ${json.secondsRemaining} seconds.`;
+            modalText.innerHTML = `You can only check one code every three minutes.<br/><br/>You can check again in ${json.secondsRemaining} seconds.`;
+            let secondsRemaining = json.secondsRemaining;
+            timeCountdownInterval = setInterval(() => {
+                const enterKey = document.querySelector('#enterKey');
+                // disable enter key
+                enterKey.disabled = true;
+                enterKey.innerHTML = `${secondsRemaining}`;
+                secondsRemaining--;
+                if (secondsRemaining < 0) {
+                    clearInterval(timeCountdownInterval);
+                    enterKey.innerHTML = 'ENTER';
+                    enterKey.disabled = false;
+                }
+            }, 1000);
         } else {
             // modal - show guess result
             showModal();
             if (json.success) {
-                modalTitle.innerHTML = 'YOU WIN!';
-                modalText.innerHTML = 'Congratulations! You guessed the code!<br/><br/>CODE: ${json.code}';
+                modalTitle.innerHTML = 'YOU WIN';
+                modalText.innerHTML = `
+                    Congratulations, you guessed the code!
+                    <br/><br/>
+                    GIFTLY CODE: <b>${json.code}</b>
+                    <br/><br/>
+                    <a href="https://www.giftly.com/entercode" target="_blank">Click here to redeem your gift card!</a>
+                `;
+                document.querySelector('#modal').removeEventListener('click', hideModal);
             } else {
-                let secondsRemaining = 60;
+                let secondsRemaining = 180;
                 modalTitle.innerHTML = 'INCORRECT';
                 if (json.message) {
+                    loading.classList.remove('overlay-bg');
+                    loading.classList.add('overlay-bg-hidden');
                     modalText.innerHTML = json.message;
+                    return;
                 } else {
                     modalText.innerHTML = `
                         <div>
                             Correct letters: <b>${json.correctLetters}</b>
                             <br/>
-                            Correct letter <i>and</i> position: <b>${json.correctPositions}</b>
+                            Correct letters in correct positions: <b>${json.correctPositions}</b>
                             <br/><br/>
-                            You can check again in 2 minutes.
+                            You can check again in three minutes.
                         </div>
                     `;
-                    document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;
+                    document.querySelector('#guessCount').innerHTML = `${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
                 }
                 timeCountdownInterval = setInterval(() => {
                     const enterKey = document.querySelector('#enterKey');
@@ -154,7 +182,7 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
         }
     } catch (e) {
         showModal();
-        let secondsRemaining = 60;
+        let secondsRemaining = 180;
         modalTitle.innerHTML = 'INCORRECT';
         timeCountdownInterval = setInterval(() => {
             const enterKey = document.querySelector('#enterKey');
@@ -189,10 +217,7 @@ document.addEventListener('keydown', e => {
     }
 });
 
-document.querySelector('#modal').addEventListener('click', () => {
-    document.querySelector('#modal').classList.remove('overlay-bg');
-    document.querySelector('#modal').classList.add('overlay-bg-hidden');
-});
+document.querySelector('#modal').addEventListener('click', hideModal);
 
 document.querySelector('#hintOne').addEventListener('click', () => {
     let secondsRemaining = 27;
@@ -225,11 +250,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const res = await fetch('/api/status');
         const json = await res.json();
+        console.log(json);
         if (json.hints) {
             loadHints(json.hints);
         }
         if (json.guessesUntilHint) {
-            document.querySelector('#guessCount').innerHTML = json.guessesUntilHint;
+            document.querySelector('#guessCount').innerHTML = `${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+        }
+        if (json.secondsRemaining) {
+            let secondsRemaining = json.secondsRemaining;
+            timeCountdownInterval = setInterval(() => {
+                const enterKey = document.querySelector('#enterKey');
+                // disable enter key
+                enterKey.disabled = true;
+                enterKey.innerHTML = `${secondsRemaining}`;
+                secondsRemaining--;
+                if (secondsRemaining < 0) {
+                    clearInterval(timeCountdownInterval);
+                    enterKey.innerHTML = 'ENTER';
+                    enterKey.disabled = false;
+                }
+            }, 1000);
+        } else {
+            document.querySelector('#enterKey').disabled = false;
         }
     } catch (e) {
         console.error(e);

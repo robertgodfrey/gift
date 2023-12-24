@@ -1,12 +1,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+//import cors from 'cors';
 
 dotenv.config();
 
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
-const secondsBetweenGuesses = 60;
+const secondsBetweenGuesses = 5;
 const hints = {
     2: 'https://i.imgur.com/Sa65OCo.png',
     3: 'https://i.imgur.com/zbWUy7U.png',
@@ -20,6 +21,7 @@ let guessesUntilHint = 3;
 let hintIndex = 1;
 
 const app = express(); // init app
+//app.use(cors());
 
 async function postWebhook(message) {
     await fetch(webhookUrl, {
