@@ -62,7 +62,7 @@ document.querySelector('#app').innerHTML = `
         <h2>GUESS THE CODE</h2>
         <p class="read-the-docs">
             You can submit one guess every three minutes.<br/>
-            A new hint will appear after <span id="guessCount">3 guesses</span>.
+            <p id="guessMsg">A new hint will appear after 3 guesses.</p>
         </p>
         <!-- <img src="" alt="Hint" style="width: 50%; border-radius: 15px;" /> -->
         <div id="hintContainer"><button id="hintOne" class="hint-btn">HINT #1</button></div>
@@ -112,7 +112,6 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
             body: JSON.stringify({ checkCode: guessChars.join('') })
         });
         const json = await res.json();
-        console.log(json);
         if (json.secondsRemaining && json.secondsRemaining > 0) {
             showModal();
             modalTitle.innerHTML = 'HOLD YOUR HORSES';
@@ -161,7 +160,11 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                             You can check again in three minutes.
                         </div>
                     `;
-                    document.querySelector('#guessCount').innerHTML = `${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+                    if (Object.keys(json.hints).length > 3) {
+                        document.querySelector('#guessMsg').innerHTML = 'You have unlocked all hints. If you need more help, please notify Rob.';
+                    } else {
+                        document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+                    }
                 }
                 timeCountdownInterval = setInterval(() => {
                     const enterKey = document.querySelector('#enterKey');
@@ -250,12 +253,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const res = await fetch('/api/status');
         const json = await res.json();
-        console.log(json);
         if (json.hints) {
             loadHints(json.hints);
         }
         if (json.guessesUntilHint) {
-            document.querySelector('#guessCount').innerHTML = `${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+            if (Object.keys(json.hints).length > 3) {
+                document.querySelector('#guessMsg').innerHTML = 'You have unlocked all hints. If you need more help, please notify Rob.';
+            } else {
+                document.querySelector('#guessMsg').innerHTML = `A new hint will appear after ${json.guessesUntilHint} guess${json.guessesUntilHint === 1 ? '' : 'es'}`;
+            }
         }
         if (json.secondsRemaining) {
             let secondsRemaining = json.secondsRemaining;

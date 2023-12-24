@@ -84,6 +84,7 @@ app.post('/api/check-code', (req, res) => {
             guessesUntilHint: guessesUntilHint,
         });
     } else {
+        postWebhook(`Someone guessed the code! (${checkCode})`);
         res.json({ success: true, code: code });
     }
 });
