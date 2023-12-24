@@ -26,13 +26,10 @@ try {
     process.exit(1);
 }
 
-const dbGuessesDoc= await DB.findOne({ name: 'guessesUntilHint' });
-const dbHintIndexDoc = await DB.findOne({ name: 'hintIndex' });
+let guessesUntilHint = 3;
+let hintIndex = 1;
 
-let guessesUntilHint = dbGuessesDoc.value || 3;
-let hintIndex = dbHintIndexDoc.value || 1;
-
-const secondsBetweenGuesses = 5;
+const secondsBetweenGuesses = 120;
 const hints = {
     2: 'https://i.imgur.com/Sa65OCo.png',
     3: 'https://i.imgur.com/zbWUy7U.png',
@@ -63,12 +60,12 @@ app.use(bodyParser.json());
 
 app.post('/api/check-code', async (req, res) => {
     const { checkCode } = req.body;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
     if (!checkCode) {
         postWebhook('Someone tried to check a code, but didn\'t provide a code -');
         return res.json({ success: false, message: 'No code provided.' });
     }
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
     if (Date.now() - lastCheckTime < secondsBetweenGuesses * 1000) {
         const secondsRemaining = Math.round((secondsBetweenGuesses * 1000 - (Date.now() - lastCheckTime)) / 1000);
         return res.json({
@@ -76,6 +73,10 @@ app.post('/api/check-code', async (req, res) => {
             secondsRemaining,
         });
     }
+    const dbGuessesDoc= await DB.findOne({ name: 'guessesUntilHint' });
+    const dbHintIndexDoc = await DB.findOne({ name: 'hintIndex' });
+    guessesUntilHint = dbGuessesDoc.value || 3;
+    hintIndex = dbHintIndexDoc.value || 1;
     guessesUntilHint--;
     await DB.findOneAndUpdate({ name: 'guessesUntilHint' }, { value: guessesUntilHint });
     lastCheckTime = Date.now();
@@ -115,7 +116,11 @@ app.post('/api/check-code', async (req, res) => {
     }
 });
 
-app.get('/api/status', (req, res) => {
+app.get('/api/status', async (req, res) => {
+    const dbGuessesDoc= await DB.findOne({ name: 'guessesUntilHint' });
+    const dbHintIndexDoc = await DB.findOne({ name: 'hintIndex' });
+    guessesUntilHint = dbGuessesDoc.value || 3;
+    hintIndex = dbHintIndexDoc.value || 1;
     const secondsRemaining = Math.round((secondsBetweenGuesses * 1000 - (Date.now() - lastCheckTime)) / 1000);
     if (hintIndex > 1) {
         for (let i = 1; i <= hintIndex; i++) {
