@@ -149,7 +149,6 @@ document.querySelector('#enterKey').addEventListener('click', async () => {
                     loading.classList.remove('overlay-bg');
                     loading.classList.add('overlay-bg-hidden');
                     modalText.innerHTML = json.message;
-                    return;
                 } else {
                     modalText.innerHTML = `
                         <div>

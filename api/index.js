@@ -29,7 +29,7 @@ try {
 let guessesUntilHint = 3;
 let hintIndex = 1;
 
-const secondsBetweenGuesses = 120;
+const secondsBetweenGuesses = 180;
 const hints = {
     2: 'https://i.imgur.com/Sa65OCo.png',
     3: 'https://i.imgur.com/zbWUy7U.png',
