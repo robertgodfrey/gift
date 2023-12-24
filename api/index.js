@@ -1,14 +1,36 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 //import cors from 'cors';
+
+const dbSchema = mongoose.Schema({
+    name: String,
+    value: String,
+});
+
+const DB = mongoose.model('DB', dbSchema, 'PlzDontEdit');
 
 dotenv.config();
 
 const code = process.env.CODE || 'AAAAAA';
 const webhookUrl = process.env.WEBHOOK || '';
-let guessesUntilHint = process.env.GUESSES_UNTIL_HINT || 3;
-let hintIndex = process.env.HINT_INDEX || 1;
+
+try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+        dbName: 'rob-dev',
+    });
+    console.log(`MongoDB connected: ${conn.connection.host}`);
+} catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+}
+
+const dbGuessesDoc= await DB.findOne({ name: 'guessesUntilHint' });
+const dbHintIndexDoc = await DB.findOne({ name: 'hintIndex' });
+
+let guessesUntilHint = dbGuessesDoc.value || 3;
+let hintIndex = dbHintIndexDoc.value || 1;
 
 const secondsBetweenGuesses = 5;
 const hints = {
@@ -39,7 +61,7 @@ async function postWebhook(message) {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.post('/api/check-code', (req, res) => {
+app.post('/api/check-code', async (req, res) => {
     const { checkCode } = req.body;
     if (!checkCode) {
         postWebhook('Someone tried to check a code, but didn\'t provide a code -');
@@ -55,7 +77,7 @@ app.post('/api/check-code', (req, res) => {
         });
     }
     guessesUntilHint--;
-    process.env['GUESSES_UNTIL_HINT'] = guessesUntilHint;
+    await DB.findOneAndUpdate({ name: 'guessesUntilHint' }, { value: guessesUntilHint });
     lastCheckTime = Date.now();
     if (checkCode === 'BZYUQS') {
         postWebhook('Someone tried to check the dummy code! #hackerman');
@@ -76,8 +98,8 @@ app.post('/api/check-code', (req, res) => {
             hintIndex++;
             currentHints[hintIndex] = hints[hintIndex];
             guessesUntilHint = 3;
-            process.env['HINT_INDEX'] = hintIndex;
-            process.env['GUESSES_UNTIL_HINT'] = guessesUntilHint;
+            await DB.findOneAndUpdate({ name: 'guessesUntilHint' }, { value: guessesUntilHint });
+            await DB.findOneAndUpdate({ name: 'hintIndex' }, { value: hintIndex });
         }
         postWebhook(`Someone tried to check code ${checkCode} (${correctLetters} correct letters, ${correctPositions} correct positions)`);
         res.json({
