@@ -222,7 +222,7 @@ document.addEventListener('keydown', e => {
 document.querySelector('#modal').addEventListener('click', hideModal);
 
 document.querySelector('#hintOne').addEventListener('click', () => {
-    let secondsRemaining = 27;
+    let secondsRemaining = 13;
     try {
         if (!audioHint.paused) {
             audioHint.pause();
@@ -240,7 +240,7 @@ document.querySelector('#hintOne').addEventListener('click', () => {
                     document.querySelector('#hintOne').innerHTML = 'HINT #1';
                 }
             }, 1000);
-            document.querySelector('#hintOne').innerHTML = 'STOP 0:28';
+            document.querySelector('#hintOne').innerHTML = 'STOP 0:14';
         }
     } catch (e) {
         console.error(e);
